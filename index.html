@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roblox Asset Tool</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  input[type="number"] { width: 200px; padding: 5px; }
+  button { padding: 5px 10px; margin-left: 10px; }
+  .drop-area {
+    margin-top: 20px;
+    padding: 20px;
+    border: 2px dashed #aaa;
+    text-align: center;
+    color: #555;
+    cursor: pointer;
+  }
+  .drop-area.dragover {
+    border-color: #333;
+    color: #000;
+  }
+  select { margin-top: 10px; padding: 5px; }
+</style>
+</head>
+<body>
+
+<h2>Roblox Asset Downloader</h2>
+<input type="number" id="assetId" placeholder="Enter asset ID">
+<button id="openAsset">Download Raw</button>
+
+<div class="drop-area" id="dropArea">
+  Drop the downloaded file here (Auto downloads)
+  <br><br>
+  <button id="openFile">Open File</button>
+  <input type="file" id="fileInput" hidden>
+  <br><br>
+  <select id="assetType">
+    <option value="png">Decal (.png)</option>
+    <option value="mp3">Audio (.mp3)</option>
+  </select>
+</div>
+
+<script>
+  const assetInput = document.getElementById('assetId');
+  const openBtn = document.getElementById('openAsset');
+  const dropArea = document.getElementById('dropArea');
+  const assetTypeSelect = document.getElementById('assetType');
+  const openFileBtn = document.getElementById('openFile');
+  const fileInput = document.getElementById('fileInput');
+
+  // Open Roblox asset in new tab
+  openBtn.addEventListener('click', () => {
+    const id = assetInput.value.trim();
+    if (!id || isNaN(id)) {
+      alert('Please enter a valid numeric asset ID');
+      return;
+    }
+    const url = `https://assetdelivery.roblox.com/v1/asset/?id=${id}`;
+    window.open(url, '_blank');
+  });
+
+  // Open file app
+  openFileBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+      handleFile(fileInput.files[0]);
+    }
+  });
+
+  // Drag & drop styles
+  dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropArea.classList.add('dragover');
+  });
+
+  dropArea.addEventListener('dragleave', () => {
+    dropArea.classList.remove('dragover');
+  });
+
+  // Handle file drop
+  dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('dragover');
+
+    const files = e.dataTransfer.files;
+    if (files.length === 0) return;
+
+    handleFile(files[0]);
+  });
+
+  function handleFile(file) {
+    const extension = assetTypeSelect.value;
+
+    let name = file.name;
+    if (name.includes('.')) {
+      name = name.split('.').slice(0, -1).join('.');
+    }
+
+    const newFileName = name + '.' + extension;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const link = document.createElement('a');
+      link.href = evt.target.result;
+      link.download = newFileName;
+      link.click();
+    };
+    reader.readAsDataURL(file);
+  }
+</script>
+
+</body>
+</html>
